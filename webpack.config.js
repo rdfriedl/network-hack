@@ -8,36 +8,49 @@ const project = require("./project.config");
 const inProject = path.resolve.bind(path, project.basePath);
 const inProjectSrc = file => inProject(project.srcDir, file);
 
-const __DEV__ = project.env === "development";
-const __TEST__ = project.env === "test";
-const __PROD__ = project.env === "production";
+const IS_DEV = project.env === "development";
+const IS_TEST = project.env === "test";
+const IS_PROD = project.env === "production";
+
+const USE_SOURCE_MAPS = IS_DEV || IS_TEST;
 
 const config = {
 	entry: {
 		normalize: [inProjectSrc("normalize")],
 		main: inProjectSrc(project.main)
 	},
-	devtool: project.sourcemaps ? "source-map" : false,
+	devtool: USE_SOURCE_MAPS ? "source-map" : false,
 	output: {
 		path: inProject(project.outDir),
-		filename: __DEV__ ? "[name].js" : "[name].[chunkhash].js",
+		filename: IS_DEV ? "[name].js" : "[name].[chunkhash].js",
 		publicPath: project.publicPath
 	},
 	resolve: {
-		modules: [inProject(project.srcDir), "node_modules"]
+		extensions: [".*", ".less", ".js", ".json"],
+		alias: {
+			"../../theme.config$": inProjectSrc("styles/theme.config")
+		}
 	},
 	externals: project.externals,
 	module: {
 		rules: []
 	},
+	node: {
+		dgram: "empty",
+		fs: "empty",
+		net: "empty",
+		tls: "empty",
+		child_process: "empty"
+	},
+	optimization: {},
 	plugins: [
 		new Dotenv(),
 		new webpack.EnvironmentPlugin(["NODE_ENV"]),
 		new webpack.DefinePlugin(
 			Object.assign({
-				__DEV__,
-				__TEST__,
-				__PROD__
+				IS_DEV,
+				IS_TEST,
+				IS_PROD
 			})
 		)
 	]
@@ -46,7 +59,7 @@ const config = {
 // JavaScript
 // ------------------------------------
 config.module.rules.push({
-	test: /\.(js|jsx)$/,
+	test: /\.js$/,
 	exclude: /node_modules/,
 	use: [
 		{
@@ -63,40 +76,27 @@ config.module.rules.push({
 const extractStyles = new ExtractTextPlugin({
 	filename: "styles/[name].[contenthash].css",
 	allChunks: true,
-	disable: __DEV__
+	disable: IS_DEV
 });
 
 config.module.rules.push({
-	test: /\.(sass|scss)$/,
+	test: /\.less$/,
 	loader: extractStyles.extract({
 		fallback: "style-loader",
 		use: [
 			{
 				loader: "css-loader",
 				options: {
-					sourceMap: project.sourcemaps,
-					minimize: {
-						autoprefixer: {
-							add: true,
-							remove: true,
-							browsers: ["last 2 versions"]
-						},
-						discardComments: {
-							removeAll: true
-						},
-						discardUnused: false,
-						mergeIdents: false,
-						reduceIdents: false,
-						safe: true,
-						sourcemap: project.sourcemaps
-					}
+					importLoaders: 0,
+					sourceMap: USE_SOURCE_MAPS,
+					minimize: IS_PROD
 				}
 			},
 			{
-				loader: "sass-loader",
+				loader: "less-loader",
 				options: {
-					sourceMap: project.sourcemaps,
-					includePaths: [inProjectSrc("styles")]
+					sourceMap: USE_SOURCE_MAPS,
+					noIeCompat: true
 				}
 			}
 		]
@@ -107,7 +107,7 @@ config.plugins.push(extractStyles);
 // Images
 // ------------------------------------
 config.module.rules.push({
-	test: /\.(png|jpg|gif)$/,
+	test: /\.(jpe?g|gif|png|ttf|eot)$/,
 	loader: "url-loader",
 	options: {
 		limit: 8192
@@ -150,20 +150,9 @@ config.plugins.push(
 	})
 );
 
-// Bundle Splitting
-// ------------------------------------
-if (!__TEST__) {
-	const bundles = ["normalize", "manifest"];
-
-	if (project.vendors && project.vendors.length) {
-		bundles.unshift("vendor");
-		config.entry.vendor = project.vendors;
-	}
-}
-
 // Dev Server
 // ------------------------------------
-if (__DEV__) {
+if (IS_DEV) {
 	config.devServer = {
 		historyApiFallback: true
 	};
@@ -171,27 +160,11 @@ if (__DEV__) {
 
 // Production Optimizations
 // ------------------------------------
-if (__PROD__) {
+if (IS_PROD) {
 	config.plugins.push(
 		new webpack.LoaderOptionsPlugin({
 			minimize: true,
 			debug: false
-		}),
-		new webpack.optimize.UglifyJsPlugin({
-			sourceMap: !!config.devtool,
-			comments: false,
-			compress: {
-				warnings: false,
-				screw_ie8: true,
-				conditionals: true,
-				unused: true,
-				comparisons: true,
-				sequences: true,
-				dead_code: true,
-				evaluate: true,
-				if_return: true,
-				join_vars: true
-			}
 		})
 	);
 }

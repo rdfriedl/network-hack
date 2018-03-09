@@ -4,10 +4,10 @@ export function token(state = null, action) {
 	switch (action.type) {
 		case AUTH_LOAD_TOKEN:
 		case AUTH_LOGIN:
-			localStorage.setItem("token", action.token);
+			action.token && localStorage.setItem("token", action.token);
 			return action.token;
 		case AUTH_LOGOUT:
-			localStorage.setItem("token", null);
+			localStorage.removeItem("token");
 			return null;
 	}
 	return state;

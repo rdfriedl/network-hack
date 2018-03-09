@@ -1,39 +1,79 @@
-import React, { Fragment } from "react";
-import PropTypes from "prop-types";
-import { Link } from "react-router-dom";
+import React, { Fragment, PureComponent } from "react";
+import { graphql, compose } from "react-apollo";
+import gql from "graphql-tag";
+import { Button, Form, Grid, Header, Segment, Message } from "semantic-ui-react";
+import { ErrorMessage } from "../../components/ErrorBoundary";
 
-import FixedBackButton from "../../components/FixedBackButton";
+class ForgotPasswordView extends PureComponent {
+	state = {
+		email: "",
+		completed: false,
+		error: null
+	};
 
-const ForgotPasswordView = () => (
-	<Fragment>
-		<FixedBackButton to="/" />
-		<div className="align-items-center d-flex h-100 justify-content-center w-100">
-			<div className="col-sm-9 col-md-8 col-lg-6 col-xl-5">
-				<div className="card border-primary">
-					<div className="card-body">
-						<h2 className="text-center">Forgot Password</h2>
-						<hr />
-						<form>
-							<div className="form-group">
-								<input type="email" name="email" className="form-control" id="inputEmail" placeholder="Email" />
-							</div>
-							<div className="d-flex justify-content-between">
-								<button className="btn btn-primary px-4" type="submit">
-									Reset Password
-								</button>
-								<Link className="btn btn-secondary px-4" to="/login">
-									Cancel
-								</Link>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</Fragment>
-);
+	handleSubmit = event => {
+		event.preventDefault();
+		const { resetPassword } = this.props;
+		const { email } = this.state;
+
+		resetPassword(email)
+			.then(() => this.setState({ completed: true }))
+			.catch(error => this.setState({ error }));
+	};
+
+	render() {
+		const { email, error, completed } = this.state;
+
+		return (
+			<Grid textAlign="center" style={{ height: "100%" }} verticalAlign="middle">
+				<Grid.Column style={{ maxWidth: 450 }}>
+					{!completed && (
+						<Fragment>
+							<Header as="h2" color="teal" textAlign="center">
+								Reset Password
+							</Header>
+							<Form size="large" onSubmit={this.handleSubmit}>
+								<Segment stacked>
+									<Form.Input
+										fluid
+										icon="user"
+										iconPosition="left"
+										placeholder="E-mail address"
+										type="email"
+										onChange={e => this.setState({ email: e.target.value })}
+										value={email}
+									/>
+
+									<Button color="teal" fluid size="large">
+										Reset Password
+									</Button>
+								</Segment>
+							</Form>
+						</Fragment>
+					)}
+
+					{completed && <Message color="positive" icon="check" content="Password reset email sent!" />}
+					{error && <ErrorMessage errors={[error]} />}
+				</Grid.Column>
+			</Grid>
+		);
+	}
+}
 
 ForgotPasswordView.propTypes = {};
 ForgotPasswordView.defaultProps = {};
 
-export default ForgotPasswordView;
+export default compose(
+	graphql(
+		gql`
+			mutation resetPassword($email: String!) {
+				sendResetPasswordToken(email: $email)
+			}
+		`,
+		{
+			props: ({ mutate }) => ({
+				resetPassword: email => mutate({ variables: { email } })
+			})
+		}
+	)
+)(ForgotPasswordView);

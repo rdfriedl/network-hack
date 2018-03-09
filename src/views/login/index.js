@@ -1,98 +1,80 @@
-import React, { Fragment, PureComponent } from "react";
+import React, { PureComponent } from "react";
 import { Switch, Route, Link } from "react-router-dom";
 import { connect } from "react-redux";
 import { graphql, compose } from "react-apollo";
 import gql from "graphql-tag";
+import { Button, Form, Grid, Header, Message, Segment } from "semantic-ui-react";
 
 import ForgotPasswordView from "./forgot";
-import FixedBackButton from "../../components/FixedBackButton";
 
 import { login } from "../../store/auth/actions";
+import { ErrorMessage } from "../../components/ErrorBoundary";
 
 export class LoginView extends PureComponent {
-	constructor(...args) {
-		super(...args);
+	state = {
+		email: "",
+		password: ""
+	};
 
-		this.state = {
-			email: "",
-			password: "",
-			loading: false
-		};
-
-		this.handleSubmit = this.handleSubmit.bind(this);
-	}
-
-	handleSubmit(event) {
+	handleSubmit = event => {
 		event.preventDefault();
 		const { login, history } = this.props;
 		const { email, password } = this.state;
 
-		this.setState({ loading: true });
-		let logInPromise = login(email, password);
-		logInPromise.then(({ data: { login: { token } } }) => {
-			this.props.dispatchLogin(token);
+		login(email, password)
+			.then(({ data: { login: { token } } }) => {
+				this.props.dispatchLogin(token);
 
-			history.goBack();
-		});
-		logInPromise.catch(err => {
-			console.error(err);
-		});
-		logInPromise.finally(() => {
-			this.setState({ loading: false });
-		});
-	}
+				history.push("/");
+			})
+			.catch(error => this.setState({ error }));
+	};
 
 	render() {
+		const { email, password, error } = this.state;
+
 		return (
-			<Fragment>
-				<FixedBackButton to="/" />
-				<div className="align-items-center d-flex h-100 justify-content-center w-100">
-					<div className="col-sm-9 col-md-8 col-lg-6 col-xl-4">
-						<div className="card border-primary bg-dark">
-							<div className="card-body">
-								<h2 className="text-center">Login</h2>
-								<hr />
-								<form onSubmit={this.handleSubmit}>
-									<div className="form-group">
-										<input
-											id="inputEmail"
-											name="email"
-											className="form-control"
-											placeholder="Email"
-											type="email"
-											onChange={e => this.setState({ email: e.target.value })}
-											value={this.state.email}
-										/>
-									</div>
-									<div className="form-group">
-										<input
-											type="password"
-											name="password"
-											className="form-control"
-											id="inputPassword"
-											placeholder="Password"
-											onChange={e => this.setState({ password: e.target.value })}
-											value={this.state.password}
-										/>
-									</div>
-									<button className="btn btn-primary px-4" type="submit">
-										Login
-									</button>
-									<Link className="btn btn-link" to="/login/forgot">
-										Forgot your password?
-									</Link>
-								</form>
+			<Grid textAlign="center" style={{ height: "100%" }} verticalAlign="middle">
+				<Grid.Column style={{ maxWidth: 450 }}>
+					<Header as="h2" color="teal" textAlign="center">
+						Log-in to your account
+					</Header>
+					<Form size="large" onSubmit={this.handleSubmit}>
+						<Segment stacked>
+							<Form.Input
+								fluid
+								icon="user"
+								iconPosition="left"
+								placeholder="E-mail address"
+								type="email"
+								onChange={e => this.setState({ email: e.target.value })}
+								value={email}
+							/>
+							<Form.Input
+								fluid
+								icon="lock"
+								iconPosition="left"
+								placeholder="Password"
+								type="password"
+								onChange={e => this.setState({ password: e.target.value })}
+								value={password}
+							/>
+							<Link className="btn btn-link" to="/login/forgot">
+								Forgot your password?
+							</Link>
 
-								<h4 className="text-center my-4">OR</h4>
+							<Button color="teal" fluid size="large">
+								Login
+							</Button>
+						</Segment>
+					</Form>
+					<Message>
+						New? <Link to="/signup">Sign Up</Link>
+					</Message>
 
-								<button className="btn btn-block btn-outline-primary" disabled>
-									Login with Github
-								</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</Fragment>
+					{error && <ErrorMessage errors={[error]} />}
+				</Grid.Column>
+			</Grid>
 		);
 	}
 }
@@ -113,9 +95,6 @@ LoginView = compose(
 			}
 		`,
 		{
-			options: {
-				errorPolicy: "all"
-			},
 			props: ({ mutate }) => ({
 				login: (email, password) => mutate({ variables: { email, password } })
 			})

@@ -1,4 +1,5 @@
 import { combineReducers } from "redux";
+import { apolloReducer } from "apollo-cache-redux";
 import auth from "./auth";
 
 export const injectReducer = (store, { key, reducer }) => {
@@ -11,7 +12,8 @@ export const injectReducer = (store, { key, reducer }) => {
 export const makeRootReducer = asyncReducers => {
 	return combineReducers({
 		...asyncReducers,
-		auth
+		auth,
+		apollo: apolloReducer
 	});
 };
 

@@ -8,7 +8,8 @@ import { AppContainer } from "react-hot-loader";
 import { ApolloProvider } from "react-apollo";
 
 import App from "./views/index";
-import "./styles/main.scss";
+import "./styles/main.less";
+import "semantic-ui-less/semantic.less";
 
 import client from "./client";
 import store from "./store";
@@ -40,7 +41,7 @@ let render = Component => {
 };
 
 // Development Tools
-if (__DEV__) {
+if (IS_DEV) {
 	if (module.hot) {
 		// Setup hot module replacement
 		module.hot.accept("./views/index", () => {
@@ -50,4 +51,4 @@ if (__DEV__) {
 }
 
 // Let's Go!
-if (!__TEST__) render(App);
+if (!IS_TEST) render(App);

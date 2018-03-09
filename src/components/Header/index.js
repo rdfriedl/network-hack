@@ -1,56 +1,42 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { Fragment } from "react";
+import { withRouter } from "react-router-dom";
 import { compose, withApollo } from "react-apollo";
 import { connect } from "react-redux";
+import { Menu } from "semantic-ui-react";
+
 import { version } from "../../../package";
-
 import UserDropdown from "./UserDropdown";
+import ErrorBoundary from "../ErrorBoundary";
 
-const Header = ({ isLoggedIn }) => (
-	<nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-		<div className="container-fluid">
-			<Link className="navbar-brand" to="/">
-				<i className="fa fa-cube" />
-				Network Hack v{version}
-			</Link>
-			<button
-				className="navbar-toggler"
-				data-toggle="collapse"
-				data-target="#navbarNav"
-				aria-controls="navbarNav"
-				aria-expanded="false"
-				aria-label="Toggle navigation"
-			>
-				<span className="navbar-toggler-icon" />
-			</button>
-			<div className="collapse navbar-collapse" id="navbarNav">
-				<div className="navbar-nav mr-auto" />
-				{isLoggedIn ? (
+const Header = ({ location, history, isLoggedIn }) => (
+	<Menu>
+		<Menu.Item header onClick={() => history.push("/")}>
+			Network Hack v{version}
+		</Menu.Item>
+
+		<Menu.Menu position="right">
+			{!isLoggedIn ? (
+				<Fragment>
+					<Menu.Item name="signup" active={location.pathname === "/signup"} onClick={() => history.push("/signup")}>
+						Sign Up
+					</Menu.Item>
+					<Menu.Item name="login" active={location.pathname === "/login"} onClick={() => history.push("/login")}>
+						Login
+					</Menu.Item>
+				</Fragment>
+			) : (
+				<ErrorBoundary>
 					<UserDropdown />
-				) : (
-					<ul className="nav navbar-nav navbar-right">
-						<li className="nav-item">
-							<Link className="nav-link" to="/login">
-								Login
-							</Link>
-						</li>
-						<li className="nav-item">
-							<Link className="nav-link" to="/signup">
-								Create Account
-							</Link>
-						</li>
-					</ul>
-				)}
-			</div>
-		</div>
-	</nav>
+				</ErrorBoundary>
+			)}
+		</Menu.Menu>
+	</Menu>
 );
 
 export function mapStateToProps({ auth }) {
 	return {
-		isLoggedIn: !!auth.token,
-		currentUser: auth.user
+		isLoggedIn: !!auth.token
 	};
 }
 
-export default compose(withApollo, connect(mapStateToProps))(Header);
+export default compose(withRouter, withApollo, connect(mapStateToProps))(Header);

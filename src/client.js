@@ -3,7 +3,7 @@ import { ApolloLink } from "apollo-link";
 import { createHttpLink } from "apollo-link-http";
 import { onError } from "apollo-link-error";
 import { setContext } from "apollo-link-context";
-import { InMemoryCache } from "apollo-cache-inmemory";
+import { ReduxCache } from "apollo-cache-redux";
 
 import store from "./store";
 import { logout } from "./store/auth/actions";
@@ -25,19 +25,25 @@ const resetToken = onError(({ networkError }) => {
 });
 const authLink = setAuthorizationLink.concat(resetToken);
 
-const httpLink = createHttpLink({
-	uri: process.env.API_URL
-});
-const logErrors = onError(({ graphQLErrors }) => {
+const logErrors = onError(({ graphQLErrors, networkError }) => {
 	if (graphQLErrors) {
 		graphQLErrors.map(({ message, path }) => {
 			console.error(`[GraphQL error]: Message: ${message}, Path: ${path}`);
 		});
 	}
+
+	if (networkError) console.log(`[Network error]: ${networkError}`);
 });
+
+const httpLink = createHttpLink({
+	uri: process.env.API_URL
+});
+
+const cache = new ReduxCache({ store });
+
 const client = new ApolloClient({
-	link: ApolloLink.from([authLink, logErrors, httpLink]),
-	cache: new InMemoryCache()
+	link: ApolloLink.from([authLink, httpLink]),
+	cache
 });
 
 export default client;

@@ -9,7 +9,7 @@ const middleware = [thunk];
 const enhancers = [];
 let composeEnhancers = compose;
 
-if (__DEV__) {
+if (IS_DEV) {
 	if (typeof window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ === "function") {
 		composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
 	}
