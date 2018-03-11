@@ -1,23 +1,21 @@
 import React from "react";
-import PropTypes from "prop-types";
 import { Switch, Route, Redirect } from "react-router-dom";
 
-import PageLayout from "../layouts/PageLayout/PageLayout";
 import LoginView from "./login";
 import SignupView from "./signup";
+import GameLayout from "../layouts/GameLayout";
+import SettingsView from "./settings";
 
 const RootView = () => <h1>home</h1>;
 
-RootView.propTypes = {};
-RootView.defaultProps = {};
-
 export default () => (
-	<PageLayout>
+	<GameLayout>
 		<Switch>
 			<Route exact path="/" component={RootView} />
 			<Route path="/login" component={LoginView} />
 			<Route path="/signup" component={SignupView} />
+			<Route path="/settings" component={SettingsView} />
 			<Redirect to="/" />
 		</Switch>
-	</PageLayout>
+	</GameLayout>
 );

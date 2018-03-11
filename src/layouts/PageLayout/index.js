@@ -1,7 +1,6 @@
-import React, { Fragment } from "react";
-import PropTypes from "prop-types";
+import React from "react";
 
-import Header from "../../components/Header/index";
+import Header from "./Header/index";
 import ErrorBoundary from "../../components/ErrorBoundary";
 
 const PageLayout = ({ children }) => (
@@ -10,8 +9,5 @@ const PageLayout = ({ children }) => (
 		{children}
 	</ErrorBoundary>
 );
-
-PageLayout.propTypes = {};
-PageLayout.defaultProps = {};
 
 export default PageLayout;

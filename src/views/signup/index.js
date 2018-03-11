@@ -93,6 +93,9 @@ export default compose(
 			}
 		`,
 		{
+			options: {
+				fetchPolicy: "no-cache"
+			},
 			props: ({ mutate }) => ({
 				signup: (email, password) => mutate({ variables: { email, password } })
 			})

@@ -95,6 +95,9 @@ LoginView = compose(
 			}
 		`,
 		{
+			options: {
+				fetchPolicy: "no-cache"
+			},
 			props: ({ mutate }) => ({
 				login: (email, password) => mutate({ variables: { email, password } })
 			})

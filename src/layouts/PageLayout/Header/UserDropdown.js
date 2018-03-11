@@ -3,14 +3,14 @@ import gql from "graphql-tag";
 import { graphql, compose } from "react-apollo";
 import { connect } from "react-redux";
 import { Dropdown } from "semantic-ui-react";
-import { logout } from "../../store/auth/actions";
+import { logout } from "../../../store/auth/actions";
 
-const UserDropdown = ({ data: { me, loading, error }, dispatchLogout }) => {
+const UserDropdown = ({ data: { user, loading, error }, dispatchLogout }) => {
 	if (error) throw error;
 	if (loading) return null;
 
 	return (
-		<Dropdown item text={me.email}>
+		<Dropdown item text={user.email}>
 			<Dropdown.Menu>
 				<Dropdown.Item>Profile</Dropdown.Item>
 				<Dropdown.Item>Settings</Dropdown.Item>
@@ -20,6 +20,12 @@ const UserDropdown = ({ data: { me, loading, error }, dispatchLogout }) => {
 	);
 };
 
+export function mapStateToProps({ auth }) {
+	return {
+		userId: auth.userId
+	};
+}
+
 export function mapDispatchToProps(dispatch) {
 	return {
 		dispatchLogout: () => dispatch(logout())
@@ -27,12 +33,19 @@ export function mapDispatchToProps(dispatch) {
 }
 
 export default compose(
-	graphql(gql`
-		query getUser {
-			me {
-				email
+	connect(mapStateToProps, mapDispatchToProps),
+	graphql(
+		gql`
+			query getUser($currentUserId: ID!) {
+				user(id: $currentUserId) {
+					email
+				}
 			}
+		`,
+		{
+			options: props => ({
+				variables: { currentUserId: props.userId }
+			})
 		}
-	`),
-	connect(null, mapDispatchToProps)
+	)
 )(UserDropdown);

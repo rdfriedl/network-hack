@@ -4,9 +4,9 @@ import { compose, withApollo } from "react-apollo";
 import { connect } from "react-redux";
 import { Menu } from "semantic-ui-react";
 
-import { version } from "../../../package";
+import { version } from "../../../../package";
 import UserDropdown from "./UserDropdown";
-import ErrorBoundary from "../ErrorBoundary";
+import ErrorBoundary from "../../../components/ErrorBoundary";
 
 const Header = ({ location, history, isLoggedIn }) => (
 	<Menu>

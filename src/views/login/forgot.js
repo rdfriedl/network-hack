@@ -71,6 +71,9 @@ export default compose(
 			}
 		`,
 		{
+			options: {
+				fetchPolicy: "no-cache"
+			},
 			props: ({ mutate }) => ({
 				resetPassword: email => mutate({ variables: { email } })
 			})
