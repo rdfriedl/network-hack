@@ -22,7 +22,7 @@ const config = {
 	devtool: USE_SOURCE_MAPS ? "source-map" : false,
 	output: {
 		path: inProject(project.outDir),
-		filename: IS_DEV ? "[name].js" : "[name].[chunkhash].js",
+		filename: IS_DEV ? "[name].js" : "[name]-[hash].js",
 		publicPath: project.publicPath
 	},
 	resolve: {
@@ -74,7 +74,7 @@ config.module.rules.push({
 // Styles
 // ------------------------------------
 const extractStyles = new ExtractTextPlugin({
-	filename: "styles/[name].[contenthash].css",
+	filename: "styles/[name]-[hash].css",
 	allChunks: true,
 	disable: IS_DEV
 });

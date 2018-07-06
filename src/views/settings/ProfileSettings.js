@@ -51,7 +51,9 @@ class ProfileSettingsView extends Component {
 	}
 
 	render() {
-		const { data: { loading } } = this.props;
+		const {
+			data: { loading }
+		} = this.props;
 		const { name, website, bio, saving, savingFields } = this.state;
 
 		return (
@@ -105,7 +107,7 @@ const fetchUserProfile = gql`
 export default compose(
 	graphql(
 		gql`
-			mutation updateProfile($data: UpdateProfile!) {
+			mutation updateProfile($data: UpdateProfileInput!) {
 				updateProfile(data: $data) {
 					id
 					profile {
